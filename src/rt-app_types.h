@@ -34,6 +34,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define DEFAULT_THREAD_PRIORITY 10
 #define DEFAULT_THREAD_NICE 0
 
+#ifndef SCHED_ENERGY
+#define SCHED_ENERGY 7
+#endif
+
 #define PATH_LENGTH 256
 
 /* exit codes */
@@ -45,6 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 typedef enum policy_t
 {
 	other = SCHED_OTHER,
+	energy = SCHED_ENERGY,
 	rr = SCHED_RR,
 	fifo = SCHED_FIFO
 #ifdef DLSCHED

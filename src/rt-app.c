@@ -635,6 +635,7 @@ static void set_thread_priority(thread_data_t *data, sched_data_t *sched_data)
 			}
 			break;
 
+		case energy:
 		case other:
 			log_debug("[%d] setting scheduler %s priority %d", data->ind,
 					policy_to_string(sched_data->policy), sched_data->prio);
@@ -648,6 +649,28 @@ static void set_thread_priority(thread_data_t *data, sched_data_t *sched_data)
 				exit(EXIT_FAILURE);
 			}
 
+			/* Sched policy change and NICE assignment are achieved
+			 * in two separate steps for now. sched_setparam should
+			 * enable to do both at once. However, we probably
+			 * don't need to re-set the policy when the task is
+			 * already a SCHED_OTHER task. */
+			if(sched_data->policy == other)
+				goto set_prio;
+
+			/* Change the sched policy if necessary */
+			param.sched_priority = 0;
+			ret = pthread_setschedparam(pthread_self(),
+					sched_data->policy,
+					&param);
+			if (ret != 0) {
+				log_critical("[%d] pthread_setschedparam"
+				     "returned %d", data->ind, ret);
+				errno = ret;
+				perror("pthread_setschedparam");
+				exit(EXIT_FAILURE);
+			}
+set_prio:
+			/* Set the NICE value */
 			ret = setpriority(PRIO_PROCESS, 0,
 					sched_data->prio);
 			if (ret != 0) {
